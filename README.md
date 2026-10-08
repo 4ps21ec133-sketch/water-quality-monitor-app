@@ -764,7 +764,7 @@ header p {
 
     <div class="sensor-card">
 
-        <div class="sensor-icon tds">
+        <div class="sensor-icon">
             🧪
         </div>
 
@@ -791,7 +791,7 @@ header p {
 
     <div class="sensor-card">
 
-        <div class="sensor-icon turbidity">
+        <div class="sensor-icon">
             💧
         </div>
 
@@ -818,7 +818,7 @@ header p {
 
     <div class="sensor-card">
 
-        <div class="sensor-icon temperature">
+        <div class="sensor-icon">
             🌡️
         </div>
 
@@ -1151,11 +1151,99 @@ function isAppInventorWebView() {
 
     return (
         window.AppInventor &&
-        typeof
-        window.AppInventor
-            .getWebViewString ===
+        typeof window.AppInventor.getWebViewString ===
         "function"
     );
+
+}
+
+
+/* =====================================================
+   CLEAN APP INVENTOR DATA
+===================================================== */
+
+function cleanAppInventorData(data) {
+
+    if (
+        data === null ||
+        data === undefined
+    ) {
+
+        return "";
+
+    }
+
+
+    data = String(data).trim();
+
+
+    /*
+     * MIT App Inventor may send:
+     *
+     * ["TDS:2718,TURB:2282,..."]
+     *
+     * Convert it to:
+     *
+     * TDS:2718,TURB:2282,...
+     */
+
+    try {
+
+        const parsed =
+            JSON.parse(data);
+
+        if (
+            Array.isArray(parsed) &&
+            parsed.length > 0
+        ) {
+
+            data =
+                String(parsed[0]).trim();
+
+        }
+
+    }
+
+    catch (error) {
+
+        /*
+         * Not JSON.
+         * Continue with normal string.
+         */
+
+    }
+
+
+    /*
+     * Remove possible quotation marks
+     */
+
+    if (
+        data.startsWith('"') &&
+        data.endsWith('"')
+    ) {
+
+        data =
+            data.substring(
+                1,
+                data.length - 1
+            );
+
+    }
+
+
+    /*
+     * Remove escaped quotation marks
+     */
+
+    data =
+        data.replace(
+            /\\"/g,
+            '"'
+        );
+
+
+    return data.trim();
 
 }
 
@@ -1177,7 +1265,7 @@ function receiveFromAppInventor() {
 
     try {
 
-        const data =
+        let data =
             window.AppInventor
                 .getWebViewString();
 
@@ -1193,28 +1281,46 @@ function receiveFromAppInventor() {
         }
 
 
-        /* ---------------------------------------------
-           SHOW RAW BLE DATA
-        --------------------------------------------- */
+        /*
+         * CLEAN APP INVENTOR FORMAT
+         */
+
+        data =
+            cleanAppInventorData(
+                data
+            );
+
+
+        if (data === "") {
+
+            return;
+
+        }
+
+
+        /*
+         * SHOW RAW BLE DATA
+         */
 
         rawDataElement.textContent =
             data;
 
 
-        /* ---------------------------------------------
-           PARSE BLE DATA
-        --------------------------------------------- */
+        /*
+         * PARSE BLE DATA
+         */
 
         parseBLEData(data);
 
 
-        /* ---------------------------------------------
-           CONNECTION STATUS
-        --------------------------------------------- */
+        /*
+         * CONNECTION STATUS
+         */
 
         setConnectedStatus();
 
     }
+
 
     catch (error) {
 
@@ -1234,6 +1340,23 @@ function receiveFromAppInventor() {
 
 function parseBLEData(data) {
 
+    /*
+     * Make parsing case-insensitive
+     * and remove unnecessary spaces.
+     */
+
+    data =
+        String(data)
+            .replace(
+                /\r/g,
+                ""
+            )
+            .replace(
+                /\n/g,
+                ""
+            )
+            .trim();
+
 
     /* =================================================
        TDS
@@ -1241,9 +1364,8 @@ function parseBLEData(data) {
 
     const tdsMatch =
         data.match(
-            /TDS:([0-9]+)/
+            /TDS\s*:\s*([0-9]+)/i
         );
-
 
     if (tdsMatch) {
 
@@ -1253,16 +1375,14 @@ function parseBLEData(data) {
     }
 
 
-
     /* =================================================
        TURBIDITY
     ================================================= */
 
     const turbidityMatch =
         data.match(
-            /TURB:([0-9]+)/
+            /TURB\s*:\s*([0-9]+)/i
         );
-
 
     if (turbidityMatch) {
 
@@ -1272,16 +1392,14 @@ function parseBLEData(data) {
     }
 
 
-
     /* =================================================
        TEMPERATURE
     ================================================= */
 
     const temperatureMatch =
         data.match(
-            /TEMP:([-+]?[0-9]*\.?[0-9]+)/
+            /TEMP\s*:\s*([-+]?[0-9]*\.?[0-9]+)/i
         );
-
 
     if (temperatureMatch) {
 
@@ -1314,16 +1432,14 @@ function parseBLEData(data) {
     }
 
 
-
     /* =================================================
        WATER QUALITY
     ================================================= */
 
     const qualityMatch =
         data.match(
-            /Q:([A-Za-z]+)/
+            /Q\s*:\s*([A-Za-z]+)/i
         );
-
 
     if (qualityMatch) {
 
@@ -1343,22 +1459,21 @@ function parseBLEData(data) {
     }
 
 
-
     /* =================================================
        DRINK COUNT
     ================================================= */
 
     const drinkCountMatch =
         data.match(
-            /DRINKS:([0-9]+)/
+            /DRINKS\s*:\s*([0-9]+)/i
         );
-
 
     if (drinkCountMatch) {
 
         const count =
             parseInt(
-                drinkCountMatch[1]
+                drinkCountMatch[1],
+                10
             );
 
 
@@ -1368,16 +1483,14 @@ function parseBLEData(data) {
     }
 
 
-
     /* =================================================
        MPU X
     ================================================= */
 
     const mpuXMatch =
         data.match(
-            /MPUX:([-+]?[0-9]*\.?[0-9]+)/
+            /MPUX\s*:\s*([-+]?[0-9]*\.?[0-9]+)/i
         );
-
 
     if (mpuXMatch) {
 
@@ -1394,16 +1507,14 @@ function parseBLEData(data) {
     }
 
 
-
     /* =================================================
        MPU Y
     ================================================= */
 
     const mpuYMatch =
         data.match(
-            /MPUY:([-+]?[0-9]*\.?[0-9]+)/
+            /MPUY\s*:\s*([-+]?[0-9]*\.?[0-9]+)/i
         );
-
 
     if (mpuYMatch) {
 
@@ -1420,16 +1531,14 @@ function parseBLEData(data) {
     }
 
 
-
     /* =================================================
        MPU Z
     ================================================= */
 
     const mpuZMatch =
         data.match(
-            /MPUZ:([-+]?[0-9]*\.?[0-9]+)/
+            /MPUZ\s*:\s*([-+]?[0-9]*\.?[0-9]+)/i
         );
-
 
     if (mpuZMatch) {
 
@@ -1456,8 +1565,9 @@ function updateQualityStyle(
     quality
 ) {
 
-
-    /* Remove old classes */
+    /*
+     * Remove old classes
+     */
 
     qualityCard.classList.remove(
         "quality-pure",
@@ -1638,6 +1748,7 @@ window.addEventListener(
     function () {
 
         setWaitingStatus();
+
 
         /*
          * Check App Inventor every
