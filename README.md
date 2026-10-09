@@ -1,1771 +1,541 @@
+
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 <meta charset="UTF-8">
-
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0">
-
-<meta name="theme-color"
-      content="#071421">
-
-<title>Water Quality Monitor</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#071421">
+<title>ESP32 BLE Connection Test</title>
 
 <style>
-
-/* =====================================================
-   GLOBAL
-===================================================== */
-
 * {
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 body {
-
-    margin: 0;
-
-    padding: 0;
-
-    font-family:
-        Arial,
-        Helvetica,
-        sans-serif;
-
-    background:
-        linear-gradient(
-            180deg,
-            #071421 0%,
-            #0b1d2a 100%
-        );
-
-    color: white;
-
-    min-height: 100vh;
+  margin: 0;
+  padding: 20px;
+  background: #071421;
+  color: #eaf4ff;
+  font-family: Arial, sans-serif;
 }
 
-
-/* =====================================================
-   MAIN APP
-===================================================== */
-
-.app {
-
-    width: 100%;
-
-    max-width: 600px;
-
-    margin: auto;
-
-    padding: 20px;
-
+.container {
+  max-width: 850px;
+  margin: auto;
 }
 
-
-/* =====================================================
-   HEADER
-===================================================== */
-
-header {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 15px;
-
-    margin-bottom: 20px;
-
+h1 {
+  text-align: center;
+  color: #50e3c2;
 }
 
-.water-icon {
-
-    width: 55px;
-
-    height: 55px;
-
-    border-radius: 16px;
-
-    background: #102b3c;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    font-size: 30px;
-
+.subtitle {
+  text-align: center;
+  color: #a8bacd;
+  margin-bottom: 25px;
 }
 
-header h1 {
-
-    margin: 0;
-
-    font-size: 25px;
-
-}
-
-header p {
-
-    margin: 5px 0 0 0;
-
-    color: #8ea4b5;
-
-    font-size: 13px;
-
-}
-
-
-/* =====================================================
-   CONNECTION CARD
-===================================================== */
-
-.connection-card {
-
-    background: #102b3c;
-
-    border-radius: 20px;
-
-    padding: 18px;
-
-    margin-bottom: 20px;
-
-    border: 1px solid #1d4157;
-
-}
-
-.connection-left {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 15px;
-
-}
-
-.bluetooth-icon {
-
-    width: 48px;
-
-    height: 48px;
-
-    border-radius: 14px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    font-size: 25px;
-
-    background: #243746;
-
-}
-
-.bluetooth-icon.connected {
-
-    background: #123d35;
-
-}
-
-.bluetooth-icon.disconnected {
-
-    background: #243746;
-
-}
-
-.small-title {
-
-    color: #8ea4b5;
-
-    font-size: 12px;
-
-    margin-bottom: 5px;
-
+.panel {
+  background: #102336;
+  border: 1px solid #294258;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 18px;
 }
 
 .status {
-
-    color: #ffcc66;
-
-    font-size: 16px;
-
-    font-weight: bold;
-
+  padding: 12px;
+  border-radius: 8px;
+  background: #26364a;
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 15px;
+  overflow-wrap: anywhere;
 }
 
-
-/* =====================================================
-   SENSOR GRID
-===================================================== */
-
-.sensor-grid {
-
-    display: grid;
-
-    grid-template-columns: repeat(2, 1fr);
-
-    gap: 15px;
-
-    margin-bottom: 20px;
-
+.connected {
+  color: #50e3c2;
 }
 
-
-/* =====================================================
-   SENSOR CARD
-===================================================== */
-
-.sensor-card {
-
-    background: #102b3c;
-
-    border-radius: 20px;
-
-    padding: 20px;
-
-    border: 1px solid #1d4157;
-
-    text-align: center;
-
+.disconnected {
+  color: #ff7777;
 }
 
-
-/* TDS FULL WIDTH */
-
-.sensor-card:first-child {
-
-    grid-column: span 2;
-
+button {
+  width: 100%;
+  border: none;
+  border-radius: 9px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  margin: 5px 0;
 }
 
-
-/* =====================================================
-   SENSOR ICON
-===================================================== */
-
-.sensor-icon {
-
-    font-size: 28px;
-
-    margin-bottom: 8px;
-
+#connectButton {
+  background: #50e3c2;
+  color: #071421;
 }
 
-.sensor-name {
-
-    color: #8ea4b5;
-
-    font-size: 13px;
-
-    margin-bottom: 8px;
-
+#disconnectButton {
+  background: #ff7777;
+  color: #071421;
 }
 
-.sensor-value {
-
-    color: white;
-
-    font-size: 28px;
-
-    font-weight: bold;
-
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
-.sensor-unit {
-
-    color: #6f8798;
-
-    font-size: 11px;
-
-    margin-top: 5px;
-
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
 }
 
-
-/* =====================================================
-   WATER QUALITY CARD
-===================================================== */
-
-.quality-card {
-
-    border-radius: 20px;
-
-    padding: 25px;
-
-    margin-bottom: 20px;
-
-    text-align: center;
-
-    border: 1px solid #1d4157;
-
-    background: #102b3c;
-
-    transition: 0.3s;
-
+.item {
+  background: #172e43;
+  border-radius: 10px;
+  padding: 14px;
+  min-width: 0;
 }
 
-.quality-icon {
-
-    width: 55px;
-
-    height: 55px;
-
-    border-radius: 50%;
-
-    margin: auto;
-
-    margin-bottom: 12px;
-
-    display: flex;
-
-    align-items: center;
-
-    justify-content: center;
-
-    font-size: 25px;
-
-    background: #243746;
-
+.label {
+  font-size: 13px;
+  color: #a8bacd;
+  margin-bottom: 9px;
 }
 
-.quality-title {
-
-    color: #8ea4b5;
-
-    font-size: 12px;
-
-    letter-spacing: 2px;
-
-    margin-bottom: 8px;
-
-}
-
-.quality-value {
-
-    font-size: 28px;
-
-    font-weight: bold;
-
-}
-
-
-/* =====================================================
-   QUALITY COLORS
-===================================================== */
-
-.quality-pure {
-
-    background: #123d35;
-
-    border-color: #1f7665;
-
-}
-
-.quality-pure .quality-value {
-
-    color: #5ff2cf;
-
-}
-
-.quality-excellent {
-
-    background: #173b3e;
-
-    border-color: #2c7e86;
-
-}
-
-.quality-excellent .quality-value {
-
-    color: #5ee7f2;
-
-}
-
-.quality-good {
-
-    background: #142f46;
-
-    border-color: #25618b;
-
-}
-
-.quality-good .quality-value {
-
-    color: #54baff;
-
-}
-
-.quality-fair {
-
-    background: #3b3420;
-
-    border-color: #76672a;
-
-}
-
-.quality-fair .quality-value {
-
-    color: #f6d75d;
-
-}
-
-.quality-high {
-
-    background: #3d2225;
-
-    border-color: #81353d;
-
-}
-
-.quality-high .quality-value {
-
-    color: #ff6975;
-
-}
-
-
-/* =====================================================
-   MPU6050 CARD
-===================================================== */
-
-.mpu-card {
-
-    background: #102b3c;
-
-    border-radius: 20px;
-
-    padding: 22px 18px;
-
-    margin-bottom: 20px;
-
-    border: 1px solid #1d4157;
-
-}
-
-.mpu-title {
-
-    color: white;
-
-    font-size: 16px;
-
-    font-weight: bold;
-
-    margin-bottom: 18px;
-
-    text-align: center;
-
-}
-
-.mpu-values {
-
-    display: grid;
-
-    grid-template-columns: repeat(2, 1fr);
-
-    gap: 12px;
-
-}
-
-.mpu-item {
-
-    background: #0c202d;
-
-    border-radius: 14px;
-
-    padding: 15px;
-
-    text-align: center;
-
-    border: 1px solid #1d4157;
-
-}
-
-.mpu-label {
-
-    color: #8ea4b5;
-
-    font-size: 12px;
-
-    margin-bottom: 7px;
-
-    letter-spacing: 1px;
-
-}
-
-.mpu-value {
-
-    color: #22d3ee;
-
-    font-size: 24px;
-
-    font-weight: bold;
-
-    word-break: break-word;
-
-}
-
-
-/* =====================================================
-   CONNECT BUTTON
-===================================================== */
-
-.connect-button {
-
-    width: 100%;
-
-    border: none;
-
-    border-radius: 16px;
-
-    padding: 17px;
-
-    background: #164b67;
-
-    color: white;
-
-    font-size: 15px;
-
-    font-weight: bold;
-
-    cursor: pointer;
-
-    margin-bottom: 20px;
-
-}
-
-.connect-button:active {
-
-    transform: scale(0.98);
-
-}
-
-
-/* =====================================================
-   INFO BOX
-===================================================== */
-
-.info-box {
-
-    background: #0c202d;
-
-    border: 1px solid #1d4157;
-
-    border-radius: 16px;
-
-    padding: 16px;
-
-    margin-bottom: 20px;
-
-}
-
-.info-box p {
-
-    margin: 7px 0;
-
-    color: #8ea4b5;
-
-    font-size: 12px;
-
-    line-height: 1.5;
-
-}
-
-.info-box strong {
-
-    color: white;
-
-}
-
-
-/* =====================================================
-   DEBUG BOX
-===================================================== */
-
-.debug-box {
-
-    background: #091923;
-
-    border: 1px solid #1d4157;
-
-    border-radius: 16px;
-
-    padding: 16px;
-
-    margin-bottom: 20px;
-
-}
-
-.debug-title {
-
-    color: white;
-
-    font-size: 13px;
-
-    font-weight: bold;
-
-    margin-bottom: 10px;
-
+.value {
+  color: #50e3c2;
+  font-size: 21px;
+  font-weight: bold;
+  overflow-wrap: anywhere;
 }
 
 #rawData {
-
-    color: #6f8798;
-
-    font-size: 11px;
-
-    line-height: 1.6;
-
-    word-break: break-all;
-
+  background: #06101b;
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 90px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  color: #c5f8e9;
+  font-family: monospace;
+  font-size: 13px;
 }
 
+#log {
+  background: #06101b;
+  border-radius: 8px;
+  padding: 12px;
+  min-height: 65px;
+  max-height: 180px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-family: monospace;
+  font-size: 12px;
+  color: #b7c9dc;
+}
 
-/* =====================================================
-   MOBILE
-===================================================== */
+.note {
+  color: #a8bacd;
+  font-size: 13px;
+  line-height: 1.6;
+}
 
 @media (max-width: 480px) {
+  body {
+    padding: 12px;
+  }
 
-    .app {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
 
-        padding: 15px;
-
-    }
-
-    header h1 {
-
-        font-size: 22px;
-
-    }
-
-    .sensor-value {
-
-        font-size: 24px;
-
-    }
-
-    .quality-value {
-
-        font-size: 25px;
-
-    }
-
-    .mpu-value {
-
-        font-size: 21px;
-
-    }
-
+  .value {
+    font-size: 17px;
+  }
 }
-
-
-/* =====================================================
-   LARGE SCREEN
-===================================================== */
-
-@media (min-width: 700px) {
-
-    .app {
-
-        padding-top: 35px;
-
-    }
-
-}
-
 </style>
-
 </head>
 
-
 <body>
+<div class="container">
 
+  <h1>ESP32 BLE Monitor</h1>
+  <p class="subtitle">Water Quality + Smart Bottle</p>
 
-<div class="app">
-
-
-<!-- =================================================
-     HEADER
-================================================== -->
-
-<header>
-
-    <div class="water-icon">
-        💧
+  <div class="panel">
+    <div id="status" class="status disconnected">
+      DISCONNECTED
     </div>
 
-    <div>
-
-        <h1>
-            Water Quality
-        </h1>
-
-        <p>
-            ESP32 • Bluetooth Monitor
-        </p>
-
-    </div>
-
-</header>
-
-
-
-<!-- =================================================
-     BLUETOOTH STATUS
-================================================== -->
-
-<div class="connection-card">
-
-    <div class="connection-left">
-
-        <div id="bluetoothIcon"
-             class="bluetooth-icon disconnected">
-
-            📡
-
-        </div>
-
-        <div>
-
-            <div class="small-title">
-                Bluetooth Status
-            </div>
-
-            <div id="status"
-                 class="status">
-
-                Disconnected
-
-            </div>
-
-        </div>
-
-    </div>
-
-</div>
-
-
-
-<!-- =================================================
-     WATER SENSOR VALUES
-================================================== -->
-
-<div class="sensor-grid">
-
-
-    <!-- TDS -->
-
-    <div class="sensor-card">
-
-        <div class="sensor-icon">
-            🧪
-        </div>
-
-        <div class="sensor-name">
-            TDS
-        </div>
-
-        <div id="tds"
-             class="sensor-value">
-
-            --
-
-        </div>
-
-        <div class="sensor-unit">
-            Raw ADC
-        </div>
-
-    </div>
-
-
-
-    <!-- TURBIDITY -->
-
-    <div class="sensor-card">
-
-        <div class="sensor-icon">
-            💧
-        </div>
-
-        <div class="sensor-name">
-            Turbidity
-        </div>
-
-        <div id="turbidity"
-             class="sensor-value">
-
-            --
-
-        </div>
-
-        <div class="sensor-unit">
-            Raw ADC
-        </div>
-
-    </div>
-
-
-
-    <!-- TEMPERATURE -->
-
-    <div class="sensor-card">
-
-        <div class="sensor-icon">
-            🌡️
-        </div>
-
-        <div class="sensor-name">
-            Temperature
-        </div>
-
-        <div id="temperature"
-             class="sensor-value">
-
-            --
-
-        </div>
-
-        <div class="sensor-unit">
-            °C
-        </div>
-
-    </div>
-
-
-</div>
-
-
-
-<!-- =================================================
-     WATER QUALITY
-================================================== -->
-
-<div id="qualityCard"
-     class="quality-card">
-
-    <div id="qualityIcon"
-         class="quality-icon">
-
-        ✓
-
-    </div>
-
-    <div class="quality-title">
-
-        WATER QUALITY
-
-    </div>
-
-    <div id="quality"
-         class="quality-value">
-
-        --
-
-    </div>
-
-</div>
-
-
-
-<!-- =================================================
-     MPU6050
-================================================== -->
-
-<div class="mpu-card">
-
-    <div class="mpu-title">
-
-        MPU6050 Bottle Status
-
-    </div>
-
-
-    <div class="mpu-values">
-
-
-        <!-- MPU X -->
-
-        <div class="mpu-item">
-
-            <div class="mpu-label">
-                MPU X
-            </div>
-
-            <div id="mpuX"
-                 class="mpu-value">
-
-                --
-
-            </div>
-
-        </div>
-
-
-
-        <!-- MPU Y -->
-
-        <div class="mpu-item">
-
-            <div class="mpu-label">
-                MPU Y
-            </div>
-
-            <div id="mpuY"
-                 class="mpu-value">
-
-                --
-
-            </div>
-
-        </div>
-
-
-
-        <!-- MPU Z -->
-
-        <div class="mpu-item">
-
-            <div class="mpu-label">
-                MPU Z
-            </div>
-
-            <div id="mpuZ"
-                 class="mpu-value">
-
-                --
-
-            </div>
-
-        </div>
-
-
-
-        <!-- DRINK COUNT -->
-
-        <div class="mpu-item">
-
-            <div class="mpu-label">
-                DRINKS
-            </div>
-
-            <div id="drinkCount"
-                 class="mpu-value">
-
-                --
-
-            </div>
-
-        </div>
-
-
-    </div>
-
-</div>
-
-
-
-<!-- =================================================
-     CONNECT BUTTON
-================================================== -->
-
-<button id="connectButton"
-        class="connect-button">
-
-    <span id="buttonIcon">
-        🔵
-    </span>
-
-    <span id="buttonText">
-        CONNECT BLUETOOTH
-    </span>
-
-</button>
-
-
-
-<!-- =================================================
-     INFORMATION
-================================================== -->
-
-<div class="info-box">
-
-    <p>
-        <strong>ESP32:</strong>
-        Water Quality Monitor
+    <button id="connectButton">CONNECT TO ESP32</button>
+    <button id="disconnectButton" disabled>DISCONNECT</button>
+
+    <p class="note">
+      Device name: Water Quality Monitor<br>
+      Protocol: Bluetooth Low Energy (BLE)
     </p>
+  </div>
 
-    <p>
-        TDS and Turbidity are displayed
-        as raw ADC values.
-    </p>
+  <div class="panel">
+    <h3>Water Quality Readings</h3>
+    <div class="grid">
+      <div class="item">
+        <div class="label">TDS</div>
+        <div class="value" id="tds">--</div>
+      </div>
 
-    <p>
-        Quality is calculated by the ESP32
-        using the TDS value.
-    </p>
+      <div class="item">
+        <div class="label">Turbidity ADC</div>
+        <div class="value" id="turbidity">--</div>
+      </div>
 
-    <p>
-        MPU6050 displays the current
-        bottle orientation.
-    </p>
+      <div class="item">
+        <div class="label">Temperature</div>
+        <div class="value" id="temperature">--</div>
+      </div>
 
-    <p>
-        Drinks shows the total detected
-        drinking events.
-    </p>
-
-</div>
-
-
-
-<!-- =================================================
-     DEBUG
-================================================== -->
-
-<div class="debug-box">
-
-    <div class="debug-title">
-
-        Last BLE Data
-
+      <div class="item">
+        <div class="label">Water Quality</div>
+        <div class="value" id="quality">--</div>
+      </div>
     </div>
+  </div>
 
-    <div id="rawData">
+  <div class="panel">
+    <h3>MPU6050 Readings</h3>
+    <div class="grid">
+      <div class="item">
+        <div class="label">X Axis</div>
+        <div class="value" id="axisX">--</div>
+      </div>
 
-        Waiting for data...
+      <div class="item">
+        <div class="label">Y Axis</div>
+        <div class="value" id="axisY">--</div>
+      </div>
 
+      <div class="item">
+        <div class="label">Z Axis</div>
+        <div class="value" id="axisZ">--</div>
+      </div>
+
+      <div class="item">
+        <div class="label">Drink Count</div>
+        <div class="value" id="drinks">--</div>
+      </div>
+
+      <div class="item">
+        <div class="label">Bottle Status</div>
+        <div class="value" id="bottleStatus">--</div>
+      </div>
+
+      <div class="item">
+        <div class="label">Water Reminder</div>
+        <div class="value" id="reminder">--</div>
+      </div>
     </div>
+  </div>
+
+  <div class="panel">
+    <h3>Latest Bluetooth Message</h3>
+    <div id="rawData">Waiting for BLE data...</div>
+  </div>
+
+  <div class="panel">
+    <h3>Connection Log</h3>
+    <div id="log">Website ready.</div>
+  </div>
 
 </div>
-
-
-</div>
-
-
 
 <script>
+"use strict";
 
-/* =====================================================
-   HTML ELEMENTS
-===================================================== */
+// ==========================================
+// ESP32 BLE UUIDS
+// ==========================================
+
+const SERVICE_UUID =
+  "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+
+const TX_UUID =
+  "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+
+// ==========================================
+// VARIABLES
+// ==========================================
+
+let bleDevice = null;
+let txCharacteristic = null;
 
 const connectButton =
-    document.getElementById(
-        "connectButton"
-    );
+  document.getElementById("connectButton");
 
-const buttonText =
-    document.getElementById(
-        "buttonText"
-    );
+const disconnectButton =
+  document.getElementById("disconnectButton");
 
-const buttonIcon =
-    document.getElementById(
-        "buttonIcon"
-    );
+const statusBox =
+  document.getElementById("status");
 
-const statusElement =
-    document.getElementById(
-        "status"
-    );
+const rawData =
+  document.getElementById("rawData");
 
-const rawDataElement =
-    document.getElementById(
-        "rawData"
-    );
+const logBox =
+  document.getElementById("log");
 
-const tdsElement =
-    document.getElementById(
-        "tds"
-    );
+// ==========================================
+// LOG MESSAGE
+// ==========================================
 
-const turbidityElement =
-    document.getElementById(
-        "turbidity"
-    );
+function log(message) {
+  const time = new Date().toLocaleTimeString();
 
-const temperatureElement =
-    document.getElementById(
-        "temperature"
-    );
+  logBox.textContent +=
+    "\n[" + time + "] " + message;
 
-const qualityElement =
-    document.getElementById(
-        "quality"
-    );
-
-const qualityCard =
-    document.getElementById(
-        "qualityCard"
-    );
-
-const qualityIcon =
-    document.getElementById(
-        "qualityIcon"
-    );
-
-const bluetoothIcon =
-    document.getElementById(
-        "bluetoothIcon"
-    );
-
-
-/* =====================================================
-   MPU ELEMENTS
-===================================================== */
-
-const mpuXElement =
-    document.getElementById(
-        "mpuX"
-    );
-
-const mpuYElement =
-    document.getElementById(
-        "mpuY"
-    );
-
-const mpuZElement =
-    document.getElementById(
-        "mpuZ"
-    );
-
-const drinkCountElement =
-    document.getElementById(
-        "drinkCount"
-    );
-
-
-/* =====================================================
-   CHECK APP INVENTOR WEBVIEW
-===================================================== */
-
-function isAppInventorWebView() {
-
-    return (
-        window.AppInventor &&
-        typeof window.AppInventor.getWebViewString ===
-        "function"
-    );
-
+  logBox.scrollTop = logBox.scrollHeight;
 }
 
+// ==========================================
+// CONNECTION STATUS
+// ==========================================
 
-/* =====================================================
-   CLEAN APP INVENTOR DATA
-===================================================== */
+function setStatus(message, connected) {
+  statusBox.textContent = message;
 
-function cleanAppInventorData(data) {
-
-    if (
-        data === null ||
-        data === undefined
-    ) {
-
-        return "";
-
-    }
-
-
-    data = String(data).trim();
-
-
-    /*
-     * MIT App Inventor may send:
-     *
-     * ["TDS:2718,TURB:2282,..."]
-     *
-     * Convert it to:
-     *
-     * TDS:2718,TURB:2282,...
-     */
-
-    try {
-
-        const parsed =
-            JSON.parse(data);
-
-        if (
-            Array.isArray(parsed) &&
-            parsed.length > 0
-        ) {
-
-            data =
-                String(parsed[0]).trim();
-
-        }
-
-    }
-
-    catch (error) {
-
-        /*
-         * Not JSON.
-         * Continue with normal string.
-         */
-
-    }
-
-
-    /*
-     * Remove possible quotation marks
-     */
-
-    if (
-        data.startsWith('"') &&
-        data.endsWith('"')
-    ) {
-
-        data =
-            data.substring(
-                1,
-                data.length - 1
-            );
-
-    }
-
-
-    /*
-     * Remove escaped quotation marks
-     */
-
-    data =
-        data.replace(
-            /\\"/g,
-            '"'
-        );
-
-
-    return data.trim();
-
+  statusBox.className =
+    "status " +
+    (connected ? "connected" : "disconnected");
 }
 
+// ==========================================
+// CONNECT TO ESP32
+// ==========================================
 
-/* =====================================================
-   RECEIVE DATA FROM APP INVENTOR
-===================================================== */
-
-function receiveFromAppInventor() {
-
-    if (!isAppInventorWebView()) {
-
-        setWaitingStatus();
-
-        return;
-
+connectButton.addEventListener("click", async () => {
+  try {
+    if (!navigator.bluetooth) {
+      throw new Error(
+        "Web Bluetooth is unavailable. Use Chrome on Android or a supported desktop browser over HTTPS."
+      );
     }
 
-
-    try {
-
-        let data =
-            window.AppInventor
-                .getWebViewString();
-
-
-        if (
-            data === null ||
-            data === undefined ||
-            data === ""
-        ) {
-
-            return;
-
-        }
-
-
-        /*
-         * CLEAN APP INVENTOR FORMAT
-         */
-
-        data =
-            cleanAppInventorData(
-                data
-            );
-
-
-        if (data === "") {
-
-            return;
-
-        }
-
-
-        /*
-         * SHOW RAW BLE DATA
-         */
-
-        rawDataElement.textContent =
-            data;
-
-
-        /*
-         * PARSE BLE DATA
-         */
-
-        parseBLEData(data);
-
-
-        /*
-         * CONNECTION STATUS
-         */
-
-        setConnectedStatus();
-
-    }
-
-
-    catch (error) {
-
-        console.log(
-            "WebViewString error:",
-            error
-        );
-
-    }
-
-}
-
-
-/* =====================================================
-   PARSE BLE DATA
-===================================================== */
-
-function parseBLEData(data) {
-
-    /*
-     * Make parsing case-insensitive
-     * and remove unnecessary spaces.
-     */
-
-    data =
-        String(data)
-            .replace(
-                /\r/g,
-                ""
-            )
-            .replace(
-                /\n/g,
-                ""
-            )
-            .trim();
-
-
-    /* =================================================
-       TDS
-    ================================================= */
-
-    const tdsMatch =
-        data.match(
-            /TDS\s*:\s*([0-9]+)/i
-        );
-
-    if (tdsMatch) {
-
-        tdsElement.textContent =
-            tdsMatch[1];
-
-    }
-
-
-    /* =================================================
-       TURBIDITY
-    ================================================= */
-
-    const turbidityMatch =
-        data.match(
-            /TURB\s*:\s*([0-9]+)/i
-        );
-
-    if (turbidityMatch) {
-
-        turbidityElement.textContent =
-            turbidityMatch[1];
-
-    }
-
-
-    /* =================================================
-       TEMPERATURE
-    ================================================= */
-
-    const temperatureMatch =
-        data.match(
-            /TEMP\s*:\s*([-+]?[0-9]*\.?[0-9]+)/i
-        );
-
-    if (temperatureMatch) {
-
-        const temperature =
-            parseFloat(
-                temperatureMatch[1]
-            );
-
-
-        /*
-         * DS18B20 returns -127 when
-         * the sensor is not connected.
-         */
-
-        if (temperature === -127) {
-
-            temperatureElement.textContent =
-                "Not Connected";
-
-        }
-
-        else {
-
-            temperatureElement.textContent =
-                temperature.toFixed(2) +
-                " °C";
-
-        }
-
-    }
-
-
-    /* =================================================
-       WATER QUALITY
-    ================================================= */
-
-    const qualityMatch =
-        data.match(
-            /Q\s*:\s*([A-Za-z]+)/i
-        );
-
-    if (qualityMatch) {
-
-        const quality =
-            qualityMatch[1]
-                .toUpperCase();
-
-
-        qualityElement.textContent =
-            quality;
-
-
-        updateQualityStyle(
-            quality
-        );
-
-    }
-
-
-    /* =================================================
-       DRINK COUNT
-    ================================================= */
-
-    const drinkCountMatch =
-        data.match(
-            /DRINKS\s*:\s*([0-9]+)/i
-        );
-
-    if (drinkCountMatch) {
-
-        const count =
-            parseInt(
-                drinkCountMatch[1],
-                10
-            );
-
-
-        drinkCountElement.textContent =
-            count;
-
-    }
-
-
-    /* =================================================
-       MPU X
-    ================================================= */
-
-    const mpuXMatch =
-        data.match(
-            /MPUX\s*:\s*([-+]?[0-9]*\.?[0-9]+)/i
-        );
-
-    if (mpuXMatch) {
-
-        const value =
-            parseFloat(
-                mpuXMatch[1]
-            );
-
-
-        mpuXElement.textContent =
-            value.toFixed(1) +
-            "°";
-
-    }
-
-
-    /* =================================================
-       MPU Y
-    ================================================= */
-
-    const mpuYMatch =
-        data.match(
-            /MPUY\s*:\s*([-+]?[0-9]*\.?[0-9]+)/i
-        );
-
-    if (mpuYMatch) {
-
-        const value =
-            parseFloat(
-                mpuYMatch[1]
-            );
-
-
-        mpuYElement.textContent =
-            value.toFixed(1) +
-            "°";
-
-    }
-
-
-    /* =================================================
-       MPU Z
-    ================================================= */
-
-    const mpuZMatch =
-        data.match(
-            /MPUZ\s*:\s*([-+]?[0-9]*\.?[0-9]+)/i
-        );
-
-    if (mpuZMatch) {
-
-        const value =
-            parseFloat(
-                mpuZMatch[1]
-            );
-
-
-        mpuZElement.textContent =
-            value.toFixed(1) +
-            "°";
-
-    }
-
-}
-
-
-/* =====================================================
-   UPDATE QUALITY STYLE
-===================================================== */
-
-function updateQualityStyle(
-    quality
-) {
-
-    /*
-     * Remove old classes
-     */
-
-    qualityCard.classList.remove(
-        "quality-pure",
-        "quality-excellent",
-        "quality-good",
-        "quality-fair",
-        "quality-high"
+    log("Searching for Water Quality Monitor...");
+
+    bleDevice = await navigator.bluetooth.requestDevice({
+      filters: [
+        { name: "Water Quality Monitor" }
+      ],
+      optionalServices: [SERVICE_UUID]
+    });
+
+    bleDevice.addEventListener(
+      "gattserverdisconnected",
+      handleDisconnect
     );
 
+    log("Device selected: " + bleDevice.name);
+    setStatus("CONNECTING...", false);
 
-    /* =================================================
-       PURE
-    ================================================= */
+    const server = await bleDevice.gatt.connect();
 
-    if (quality === "PURE") {
+    log("BLE GATT connected.");
 
-        qualityCard.classList.add(
-            "quality-pure"
-        );
+    const service =
+      await server.getPrimaryService(SERVICE_UUID);
 
-        qualityIcon.textContent =
-            "✓";
+    log("BLE service found.");
 
-    }
+    txCharacteristic =
+      await service.getCharacteristic(TX_UUID);
 
+    log("TX characteristic found.");
 
-    /* =================================================
-       EXCELLENT
-    ================================================= */
+    await txCharacteristic.startNotifications();
 
-    else if (
-        quality === "EXCELLENT"
-    ) {
+    txCharacteristic.addEventListener(
+      "characteristicvaluechanged",
+      handleNotification
+    );
 
-        qualityCard.classList.add(
-            "quality-excellent"
-        );
+    setStatus("CONNECTED - WAITING FOR DATA", true);
 
-        qualityIcon.textContent =
-            "✓";
+    connectButton.disabled = true;
+    disconnectButton.disabled = false;
 
-    }
+    log("Notifications enabled. Waiting for sensor readings...");
 
+  } catch (error) {
+    setStatus("CONNECTION FAILED", false);
+    log("ERROR: " + error.message);
+    console.error(error);
+  }
+});
 
-    /* =================================================
-       GOOD
-    ================================================= */
+// ==========================================
+// RECEIVE BLE NOTIFICATIONS
+// ==========================================
 
-    else if (
-        quality === "GOOD"
-    ) {
+function handleNotification(event) {
+  const dataView = event.target.value;
 
-        qualityCard.classList.add(
-            "quality-good"
-        );
+  const bytes = new Uint8Array(
+    dataView.buffer,
+    dataView.byteOffset,
+    dataView.byteLength
+  );
 
-        qualityIcon.textContent =
-            "✓";
+  const message = new TextDecoder("utf-8").decode(bytes).trim();
 
-    }
+  if (!message) return;
 
+  rawData.textContent = message;
 
-    /* =================================================
-       FAIR
-    ================================================= */
+  setStatus("CONNECTED - DATA RECEIVED", true);
 
-    else if (
-        quality === "FAIR"
-    ) {
+  log("BLE RX: " + message);
 
-        qualityCard.classList.add(
-            "quality-fair"
-        );
-
-        qualityIcon.textContent =
-            "!";
-
-    }
-
-
-    /* =================================================
-       HIGH
-    ================================================= */
-
-    else if (
-        quality === "HIGH"
-    ) {
-
-        qualityCard.classList.add(
-            "quality-high"
-        );
-
-        qualityIcon.textContent =
-            "!";
-
-    }
-
+  parseSensorData(message);
 }
 
+// ==========================================
+// PARSE ESP32 DATA
+// ==========================================
 
-/* =====================================================
-   CONNECTED STATUS
-===================================================== */
+function parseSensorData(message) {
+  const values = {};
 
-function setConnectedStatus() {
+  // Supports the complete sensor message and
+  // separate COUNT / READY / REMINDER messages.
 
-    statusElement.textContent =
-        "Connected";
+  message.split(",").forEach(part => {
+    const separator = part.indexOf(":");
 
-    statusElement.style.color =
-        "#5ff2cf";
+    if (separator < 0) return;
 
+    const key = part
+      .slice(0, separator)
+      .trim()
+      .toUpperCase();
 
-    bluetoothIcon.classList.remove(
-        "disconnected"
-    );
+    const value = part
+      .slice(separator + 1)
+      .trim();
 
-    bluetoothIcon.classList.add(
-        "connected"
-    );
+    values[key] = value;
+  });
 
+  // Water quality
 
-    buttonText.textContent =
-        "BLUETOOTH CONNECTED";
+  if (values.TDS !== undefined) {
+    document.getElementById("tds").textContent =
+      values.TDS + " ppm";
+  }
 
-    buttonIcon.textContent =
-        "🟢";
+  if (values.TURB !== undefined) {
+    document.getElementById("turbidity").textContent =
+      values.TURB;
+  }
 
+  if (values.TEMP !== undefined) {
+    document.getElementById("temperature").textContent =
+      values.TEMP + " °C";
+  }
+
+  if (values.Q !== undefined) {
+    document.getElementById("quality").textContent =
+      values.Q;
+  }
+
+  // MPU6050 angles
+
+  if (values.X !== undefined) {
+    document.getElementById("axisX").textContent =
+      values.X + "°";
+  }
+
+  if (values.Y !== undefined) {
+    document.getElementById("axisY").textContent =
+      values.Y + "°";
+  }
+
+  if (values.Z !== undefined) {
+    document.getElementById("axisZ").textContent =
+      values.Z + "°";
+  }
+
+  // Drink count can arrive as DRINKS or COUNT
+
+  if (values.DRINKS !== undefined) {
+    document.getElementById("drinks").textContent =
+      values.DRINKS;
+  }
+
+  if (values.COUNT !== undefined) {
+    document.getElementById("drinks").textContent =
+      values.COUNT;
+  }
+
+  // Status can arrive in regular data or event data
+
+  if (values.STATUS !== undefined) {
+    document.getElementById("bottleStatus").textContent =
+      values.STATUS;
+  }
+
+  // Reminder messages
+
+  if (values.REMINDER !== undefined) {
+    document.getElementById("reminder").textContent =
+      values.REMINDER;
+  } else if (message.startsWith("REMINDER:")) {
+    document.getElementById("reminder").textContent =
+      message.substring("REMINDER:".length).trim();
+  }
 }
 
+// ==========================================
+// DISCONNECTION
+// ==========================================
 
-/* =====================================================
-   WAITING STATUS
-===================================================== */
+function handleDisconnect() {
+  setStatus("DISCONNECTED", false);
 
-function setWaitingStatus() {
+  connectButton.disabled = false;
+  disconnectButton.disabled = true;
 
-    statusElement.textContent =
-        "Waiting for App Inventor";
+  txCharacteristic = null;
 
-    statusElement.style.color =
-        "#ffcc66";
-
-
-    bluetoothIcon.classList.remove(
-        "connected"
-    );
-
-    bluetoothIcon.classList.add(
-        "disconnected"
-    );
-
+  log("ESP32 disconnected.");
 }
 
+disconnectButton.addEventListener("click", () => {
+  if (bleDevice && bleDevice.gatt.connected) {
+    bleDevice.gatt.disconnect();
+  } else {
+    handleDisconnect();
+  }
+});
 
-/* =====================================================
-   CONNECT BUTTON
-===================================================== */
+// ==========================================
+// INITIAL CHECK
+// ==========================================
 
-connectButton.addEventListener(
-    "click",
-    function () {
+if (!navigator.bluetooth) {
+  setStatus("WEB BLUETOOTH NOT AVAILABLE", false);
 
-        alert(
-            "Bluetooth connection is controlled by MIT App Inventor."
-        );
-
-    }
-);
-
-
-/* =====================================================
-   START
-===================================================== */
-
-window.addEventListener(
-    "load",
-    function () {
-
-        setWaitingStatus();
-
-
-        /*
-         * Check App Inventor every
-         * 500 milliseconds.
-         */
-
-        setInterval(
-            receiveFromAppInventor,
-            500
-        );
-
-    }
-);
-
+  log(
+    "Open this page in a supported browser using HTTPS or localhost."
+  );
+}
 </script>
 
-
 </body>
-
 </html>
