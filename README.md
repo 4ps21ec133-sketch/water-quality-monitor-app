@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,9 +8,7 @@
 <title>ESP32 Water Quality Monitor</title>
 
 <style>
-* {
-    box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
     margin: 0;
@@ -19,10 +18,7 @@ body {
     font-family: Arial, sans-serif;
 }
 
-.container {
-    max-width: 900px;
-    margin: auto;
-}
+.container { max-width: 900px; margin: auto; }
 
 h1 {
     text-align: center;
@@ -30,10 +26,7 @@ h1 {
     margin-bottom: 8px;
 }
 
-h3 {
-    margin-top: 0;
-    color: #eaf4ff;
-}
+h3 { margin-top: 0; color: #eaf4ff; }
 
 .subtitle {
     text-align: center;
@@ -59,13 +52,8 @@ h3 {
     overflow-wrap: anywhere;
 }
 
-.connected {
-    color: #50e3c2;
-}
-
-.disconnected {
-    color: #ff7777;
-}
+.connected { color: #50e3c2; }
+.disconnected { color: #ff7777; }
 
 button {
     width: 100%;
@@ -78,19 +66,9 @@ button {
     margin: 5px 0;
 }
 
-#connectButton {
-    background: #50e3c2;
-    color: #071421;
-}
-
-#disconnectButton {
-    background: #ff7777;
-    color: #071421;
-}
-
-button:disabled {
-    opacity: 0.45;
-}
+#connectButton { background: #50e3c2; color: #071421; }
+#disconnectButton { background: #ff7777; color: #071421; }
+button:disabled { opacity: 0.45; }
 
 .note {
     color: #a8bacd;
@@ -124,8 +102,7 @@ button:disabled {
     overflow-wrap: anywhere;
 }
 
-#rawData,
-#log {
+#rawData, #log {
     background: #06101b;
     border-radius: 8px;
     padding: 12px;
@@ -136,9 +113,7 @@ button:disabled {
     font-size: 13px;
 }
 
-#rawData {
-    color: #c5f8e9;
-}
+#rawData { color: #c5f8e9; }
 
 #log {
     color: #b7c9dc;
@@ -146,31 +121,14 @@ button:disabled {
     overflow-y: auto;
 }
 
-.reminder-active {
-    color: #ffcc66;
-}
+.reminder-active { color: #ffcc66; }
 
 @media (max-width: 480px) {
-    body {
-        padding: 10px;
-    }
-
-    .panel {
-        padding: 13px;
-    }
-
-    .grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 8px;
-    }
-
-    .item {
-        padding: 10px;
-    }
-
-    .value {
-        font-size: 17px;
-    }
+    body { padding: 10px; }
+    .panel { padding: 13px; }
+    .grid { gap: 8px; }
+    .item { padding: 10px; }
+    .value { font-size: 17px; }
 }
 </style>
 </head>
@@ -202,17 +160,14 @@ button:disabled {
                 <div class="label">TDS</div>
                 <div class="value" id="tds">--</div>
             </div>
-
             <div class="item">
                 <div class="label">Turbidity ADC</div>
                 <div class="value" id="turbidity">--</div>
             </div>
-
             <div class="item">
                 <div class="label">Temperature</div>
                 <div class="value" id="temperature">--</div>
             </div>
-
             <div class="item">
                 <div class="label">Water Quality</div>
                 <div class="value" id="quality">--</div>
@@ -227,27 +182,22 @@ button:disabled {
                 <div class="label">X Axis</div>
                 <div class="value" id="axisX">--</div>
             </div>
-
             <div class="item">
                 <div class="label">Y Axis</div>
                 <div class="value" id="axisY">--</div>
             </div>
-
             <div class="item">
                 <div class="label">Z Axis</div>
                 <div class="value" id="axisZ">--</div>
             </div>
-
             <div class="item">
                 <div class="label">Drink Count</div>
                 <div class="value" id="drinks">--</div>
             </div>
-
             <div class="item">
                 <div class="label">Bottle Status</div>
                 <div class="value" id="bottleStatus">--</div>
             </div>
-
             <div class="item">
                 <div class="label">Water Reminder</div>
                 <div class="value" id="reminder">--</div>
@@ -288,29 +238,20 @@ let bleDevice = null;
 let txCharacteristic = null;
 
 let appBridgeMode = false;
-let bridgeDetected = false;
 let lastAppData = "";
+let lastDataTime = 0;
 
-const connectButton =
-    document.getElementById("connectButton");
+const $ = id => document.getElementById(id);
 
-const disconnectButton =
-    document.getElementById("disconnectButton");
-
-const statusBox =
-    document.getElementById("status");
-
-const rawData =
-    document.getElementById("rawData");
-
-const logBox =
-    document.getElementById("log");
-
-const connectionNote =
-    document.getElementById("connectionNote");
+const connectButton = $("connectButton");
+const disconnectButton = $("disconnectButton");
+const statusBox = $("status");
+const rawData = $("rawData");
+const logBox = $("log");
+const connectionNote = $("connectionNote");
 
 // ==================================================
-// LOG
+// LOGGING
 // ==================================================
 
 function log(message) {
@@ -319,36 +260,48 @@ function log(message) {
     logBox.textContent +=
         "\n[" + time + "] " + message;
 
+    // Prevent unlimited log growth
+    const lines = logBox.textContent.split("\n");
+    if (lines.length > 35) {
+        logBox.textContent = lines.slice(-35).join("\n");
+    }
+
     logBox.scrollTop = logBox.scrollHeight;
 }
 
 // ==================================================
-// CONNECTION STATUS
+// STATUS
 // ==================================================
 
 function setStatus(message, connected) {
     statusBox.textContent = message;
-
     statusBox.className =
-        "status " +
-        (connected ? "connected" : "disconnected");
+        "status " + (connected ? "connected" : "disconnected");
 }
 
 // ==================================================
-// DETECT MIT APP INVENTOR WEBVIEWER
+// MIT APP INVENTOR BRIDGE
 // ==================================================
 
-function detectAppInventor() {
-    const available =
-        window.AppInventor &&
-        typeof window.AppInventor.getWebViewString ===
-            "function";
+function getAppInventorBridge() {
+    try {
+        return !!(
+            window.AppInventor &&
+            typeof window.AppInventor.getWebViewString === "function"
+        );
+    } catch (error) {
+        return false;
+    }
+}
 
-    if (available && !bridgeDetected) {
-        bridgeDetected = true;
+function detectAppInventor() {
+    if (!getAppInventorBridge()) {
+        return false;
+    }
+
+    if (!appBridgeMode) {
         appBridgeMode = true;
 
-        // BLE connection is handled by MIT App Inventor.
         connectButton.style.display = "none";
         disconnectButton.style.display = "none";
 
@@ -358,39 +311,36 @@ function detectAppInventor() {
         setStatus("WAITING FOR APP DATA", false);
 
         log("MIT App Inventor bridge detected.");
-        log("Waiting for ESP32 readings from the app.");
+        log("Waiting for Bluetooth data.");
     }
 
-    return !!available;
+    return true;
 }
 
 // ==================================================
-// CONNECT DIRECTLY USING WEB BLUETOOTH
-// Used only in supported normal browsers.
+// DIRECT WEB BLUETOOTH
+// Used when opened in a compatible browser
 // ==================================================
 
 connectButton.addEventListener("click", async function() {
     try {
         if (appBridgeMode) {
-            log("Connect using the MIT App Inventor button.");
+            log("Bluetooth is managed by MIT App Inventor.");
             return;
         }
 
         if (!navigator.bluetooth) {
             throw new Error(
-                "Web Bluetooth is not available in this browser."
+                "Web Bluetooth is unavailable. Use MIT App Inventor."
             );
         }
 
-        log("Searching for Water Quality Monitor...");
+        log("Searching for ESP32...");
 
-        bleDevice =
-            await navigator.bluetooth.requestDevice({
-                filters: [
-                    { name: "Water Quality Monitor" }
-                ],
-                optionalServices: [SERVICE_UUID]
-            });
+        bleDevice = await navigator.bluetooth.requestDevice({
+            filters: [{ name: "Water Quality Monitor" }],
+            optionalServices: [SERVICE_UUID]
+        });
 
         bleDevice.addEventListener(
             "gattserverdisconnected",
@@ -400,9 +350,7 @@ connectButton.addEventListener("click", async function() {
         setStatus("CONNECTING...", false);
 
         const server = await bleDevice.gatt.connect();
-
-        const service =
-            await server.getPrimaryService(SERVICE_UUID);
+        const service = await server.getPrimaryService(SERVICE_UUID);
 
         txCharacteristic =
             await service.getCharacteristic(TX_UUID);
@@ -427,7 +375,7 @@ connectButton.addEventListener("click", async function() {
 });
 
 // ==================================================
-// RECEIVE DIRECT BLE NOTIFICATIONS
+// DIRECT BLE MESSAGE RECEIVER
 // ==================================================
 
 function handleNotification(event) {
@@ -439,53 +387,56 @@ function handleNotification(event) {
         view.byteLength
     );
 
-    const message =
-        new TextDecoder("utf-8").decode(bytes).trim();
+    const message = new TextDecoder("utf-8")
+        .decode(bytes)
+        .trim();
 
-    if (!message) return;
-
-    displayReceivedMessage(message, "BLE RX");
+    if (message) {
+        displayReceivedMessage(message, "BLE RX");
+    }
 }
 
 // ==================================================
-// RECEIVE DATA FROM MIT APP INVENTOR
+// MIT APP INVENTOR MESSAGE RECEIVER
 //
-// In Blocks, set:
-// WebViewer1.WebViewString = first item of stringValues
+// App Inventor Blocks must set:
+// WebViewer1.WebViewString = received BLE text
 // ==================================================
 
 function receiveFromAppInventor() {
     if (!detectAppInventor()) return;
 
-    let message = "";
+    let message;
 
     try {
         message = window.AppInventor.getWebViewString();
     } catch (error) {
-        console.log("WebViewString read error:", error);
         return;
     }
 
-    if (typeof message !== "string") {
-        message = String(message || "");
-    }
+    if (message === null || message === undefined) return;
 
-    message = message.trim();
+    message = String(message).trim();
 
-    if (!message || message === lastAppData) {
-        return;
-    }
+    if (!message || message === lastAppData) return;
 
     lastAppData = message;
+    lastDataTime = Date.now();
 
     displayReceivedMessage(message, "APP RX");
 }
 
-// Poll the App Inventor bridge for new messages.
-setInterval(receiveFromAppInventor, 300);
+// Keep checking for new App Inventor data.
+setInterval(receiveFromAppInventor, 250);
+
+// Also check when the page loads.
+window.addEventListener("load", function() {
+    detectAppInventor();
+    receiveFromAppInventor();
+});
 
 // ==================================================
-// DISPLAY A RECEIVED MESSAGE
+// DISPLAY MESSAGE
 // ==================================================
 
 function displayReceivedMessage(message, source) {
@@ -500,124 +451,105 @@ function displayReceivedMessage(message, source) {
 
 // ==================================================
 // PARSE SENSOR DATA
-// Supports messages such as:
 //
+// Combined example:
 // TDS:378,TURB:1250,TEMP:27.50,Q:GOOD,
 // X:5.0,Y:-83.5,Z:4.0,DRINKS:3,
 // STATUS:READY,REMINDER:NONE
 //
-// Also supports separate COUNT, READY and REMINDER
-// messages from the ESP32.
+// Separate examples:
+// COUNT:3,X:-2.1,Y:-1.8,Z:-87.4,STATUS:DRINK
+// REMINDER:DRINK WATER
 // ==================================================
 
 function parseSensorData(message) {
     const values = {};
 
-    message.split(",").forEach(function(part) {
+    // Accept comma-separated and semicolon-separated fields.
+    const parts = message.split(/[,;\r\n]+/);
+
+    parts.forEach(function(part) {
         const separator = part.indexOf(":");
 
         if (separator < 0) return;
 
-        const key = part
-            .substring(0, separator)
+        const key = part.substring(0, separator)
             .trim()
             .toUpperCase();
 
-        const value = part
-            .substring(separator + 1)
-            .trim();
+        const value = part.substring(separator + 1).trim();
 
-        values[key] = value;
+        if (key) {
+            values[key] = value;
+        }
     });
 
     // Water quality readings
-
     if (values.TDS !== undefined) {
-        document.getElementById("tds").textContent =
-            values.TDS + " ppm";
+        $("tds").textContent = values.TDS + " ppm";
     }
 
     if (values.TURB !== undefined) {
-        document.getElementById("turbidity").textContent =
-            values.TURB;
+        $("turbidity").textContent = values.TURB;
     }
 
     if (values.TEMP !== undefined) {
-        document.getElementById("temperature").textContent =
-            values.TEMP + " °C";
+        $("temperature").textContent = values.TEMP + " °C";
     }
 
     if (values.Q !== undefined) {
-        document.getElementById("quality").textContent =
-            values.Q;
+        $("quality").textContent = values.Q;
     }
 
-    // MPU6050 readings
-
+    // MPU6050 axes
     if (values.X !== undefined) {
-        document.getElementById("axisX").textContent =
-            values.X + "°";
+        $("axisX").textContent = values.X + "°";
     }
 
     if (values.Y !== undefined) {
-        document.getElementById("axisY").textContent =
-            values.Y + "°";
+        $("axisY").textContent = values.Y + "°";
     }
 
     if (values.Z !== undefined) {
-        document.getElementById("axisZ").textContent =
-            values.Z + "°";
+        $("axisZ").textContent = values.Z + "°";
     }
 
-    // Drink count: regular data or separate event
-
+    // Drink count: accept either DRINKS or COUNT
     if (values.DRINKS !== undefined) {
-        document.getElementById("drinks").textContent =
-            values.DRINKS;
-    }
-
-    if (values.COUNT !== undefined) {
-        document.getElementById("drinks").textContent =
-            values.COUNT;
+        $("drinks").textContent = values.DRINKS;
+    } else if (values.COUNT !== undefined) {
+        $("drinks").textContent = values.COUNT;
     }
 
     // Bottle status
-
     if (values.STATUS !== undefined) {
-        document.getElementById("bottleStatus").textContent =
-            values.STATUS;
+        $("bottleStatus").textContent = values.STATUS;
     }
 
     // Water reminder
-
     if (values.REMINDER !== undefined) {
-        const reminder =
-            document.getElementById("reminder");
+        updateReminder(values.REMINDER);
+    }
 
-        reminder.textContent = values.REMINDER;
-
-        reminder.classList.toggle(
-            "reminder-active",
-            values.REMINDER.toUpperCase().includes("DRINK WATER")
-        );
-    } else if (message.toUpperCase().startsWith("REMINDER:")) {
-        const reminder =
-            document.getElementById("reminder");
-
-        const text =
-            message.substring("REMINDER:".length).trim();
-
-        reminder.textContent = text;
-
-        reminder.classList.toggle(
-            "reminder-active",
-            text.toUpperCase().includes("DRINK WATER")
-        );
+    // Also support a standalone reminder message.
+    if (/^\s*REMINDER\s*:/i.test(message)) {
+        updateReminder(message.replace(/^\s*REMINDER\s*:/i, "").trim());
     }
 }
 
+function updateReminder(value) {
+    const reminder = $("reminder");
+
+    reminder.textContent = value;
+
+    reminder.classList.toggle(
+        "reminder-active",
+        value.toUpperCase().includes("DRINK WATER")
+    );
+}
+
 // ==================================================
-// DISCONNECTION
+// DISCONNECT
 // ==================================================
 
 function handleDisconnect() {
@@ -632,8 +564,7 @@ function handleDisconnect() {
 }
 
 disconnectButton.addEventListener("click", function() {
-    if (bleDevice && bleDevice.gatt &&
-        bleDevice.gatt.connected) {
+    if (bleDevice && bleDevice.gatt && bleDevice.gatt.connected) {
         bleDevice.gatt.disconnect();
     } else {
         handleDisconnect();
@@ -641,20 +572,16 @@ disconnectButton.addEventListener("click", function() {
 });
 
 // ==================================================
-// INITIAL CHECK
+// INITIALIZATION
 // ==================================================
 
-detectAppInventor();
+if (!detectAppInventor() && !navigator.bluetooth) {
+    setStatus("WAITING FOR APP DATA", false);
 
-if (!appBridgeMode && !navigator.bluetooth) {
-    setStatus("WEB BLUETOOTH NOT AVAILABLE", false);
-
-    log(
-        "Use MIT App Inventor BluetoothLE, or open this page " +
-        "in a browser supporting Web Bluetooth."
-    );
+    log("Waiting for MIT App Inventor Bluetooth data.");
 }
-
 </script>
+
 </body>
 </html>
+```
