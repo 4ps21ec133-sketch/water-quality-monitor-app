@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -584,4 +583,3 @@ if (!detectAppInventor() && !navigator.bluetooth) {
 
 </body>
 </html>
-```
